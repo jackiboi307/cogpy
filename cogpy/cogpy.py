@@ -2,7 +2,7 @@
 Cogpy 0.2.0
 """
 
-import os
+from os import name
 from time import sleep
 import string
 from colorama import init
@@ -26,6 +26,12 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
+def ready(check=True):
+    if name == "posix" and check:
+        printnln(Escape.cursor.hide())
+        printnln(Escape.clear.full())
+
+
 class Escape:
     class _cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
@@ -40,22 +46,15 @@ class Escape:
         save = lambda: "\033[s"
         restore = lambda: "\033[u"
 
+        hide = lambda: "\033[?25l"
+        show = lambda: "\033[?25h"
+
     class _clear:
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
 
     cursor = _cursor
     clear = _clear
-
-
-class Color:
-    class bit8:
-        ...
-
-    none = ""
-    set_mode = lambda value: f"\033[={value}h"
-    reset_mode = lambda value: f"\033[={value}l"
-
 
 
 class _getindexes:
@@ -118,18 +117,18 @@ class _draw:
             for x in range(len(string[y])):
                 if string[y][x] not in ignore:
                     self._canvas.draw.pixel((x + pos[0], y + pos[1]), string[y][x], fg, bg, st)
-                    
-                    
+
+
 class _paint:
     def __init__(self, canvas):
         self._canvas = canvas
-        
+
     def pixel(self, pos, fg="", bg="", st=""):
         c = (fg, bg, st)
         for i in range(len(c)):
             if c[i] != "":
                 self._canvas._out[pos[1]][pos[0]][0][i] = c[i]
-        
+
     def line(self, start_pos, end_pos, fg="", bg="", st=""):
         for i in _getindexes.line(start_pos, end_pos):
             self._canvas.paint.pixel(i, fg, bg, st)
@@ -192,7 +191,8 @@ class Canvas:
         if return_:
             return out
         else:
-            print(Escape.cursor.up()*(len(self._out)), end=out)
+            printnln(Escape.cursor.up()*len(self._out))
+            printnln(out)
 
     def fill(self, char=None, fg="", bg="", st=""):
         c = (fg, bg, st)

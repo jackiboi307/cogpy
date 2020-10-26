@@ -10,7 +10,7 @@ from colorama import Fore, Back, Style
 
 canvas = cogpy.Canvas((100, 50))
 
-print(end=cogpy.Escape.clear.full())
+cogpy.ready(True)
 
 while True:
     cogpy.time.tick(60)
