@@ -6,7 +6,9 @@ import cogpy
 
 from random import randint
 
-canvas = cogpy.Canvas((100, 50), bg=".")
+from colorama import Fore
+
+canvas = cogpy.Canvas((100, 50))
 
 print(end=cogpy.Escape.clear.full())
 
@@ -23,6 +25,6 @@ good letter
 dadadadadadadda
 """)
 
-    canvas.draw.polygon(((30, 30), (40, 30), (40, 50), (40, 50)), cogpy.library.block_shades[0])
+    canvas.draw.polygon(((30, 30), (40, 30), (40, 50), (40, 50)), cogpy.library.block_shades[0], fg=Fore.GREEN)
 
-    canvas.render(False)
+    canvas.render(True)

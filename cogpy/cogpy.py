@@ -35,21 +35,19 @@ class Escape:
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
 
+    class _color:
+        ...
+
     cursor = _cursor
     clear = _clear
+    color = _color
 
 
-class _draw:
-    def __init__(self, canvas):
-        self._canvas = canvas
-
+class _getindexes:
     # TODO - Implement a method for almost all functions in scikit_image._draw
 
-    def pixel(self, pos, char):
-        self._canvas._out[pos[1]][pos[0]][1] = str(char)
-
-    @staticmethod
-    def _convert(output):
+    @classmethod
+    def _convert(cls, output):
         output = list(output)
         rr, cc = output[0], output[1]
         rr, cc = list(rr), list(cc)
@@ -58,12 +56,13 @@ class _draw:
             indexes.append((rr[i], cc[i]))
         return indexes
 
-    def line(self, start_pos, end_pos, char):
-        for i in self._convert(line(*start_pos, *end_pos)):
-            self._canvas.draw.pixel(i, char)
+    @classmethod
+    def line(cls, start_pos, end_pos):
+        return cls._convert(line(*start_pos, *end_pos))
 
-    def polygon(self, points, char):
-        def somefuncthathelpsme(z):
+    @classmethod
+    def polygon(cls, points):
+        def rc_to_2d(z):
             x = []
             y = []
             for i in range(len(z)):
@@ -71,19 +70,58 @@ class _draw:
                 y.append(z[i][1])
             return (x, y)
 
-        for i in self._convert(polygon(*somefuncthathelpsme(points))):
-            self._canvas.draw.pixel(i, char)
+        return cls._convert(polygon(*rc_to_2d(points)))
 
-    def rect(self, start_pos, end_pos, char):
+    @classmethod
+    def rect(cls, start_pos, end_pos):
         # TODO - skimage._draw.rectangle acts wierd and i cant get it to work, use skimage._draw.polygon until it works
-        pass
+        #  Also implement so this method calls the polygon method and draws a rect using it
+        ...
 
-    def blit(self, pos, string, ignore=string.whitespace):
+    # TODO - Sätt blit satt den endast är i draw
+
+
+class _draw:
+    def __init__(self, canvas):
+        self._canvas = canvas
+
+    def pixel(self, pos, char, fg="", bg="", st=""):
+        self._canvas._out[pos[1]][pos[0]][1] = char
+        self._canvas.paint.pixel(pos, fg, bg, st)
+
+    def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
+        for i in _getindexes.line(start_pos, end_pos):
+            self._canvas.draw.pixel(i, char, fg, bg, st)
+
+    def polygon(self, points, char, fg="", bg="", st=""):
+        for i in _getindexes.polygon(points):
+            self._canvas.draw.pixel(i, char, fg, bg, st)
+
+    def blit(self, pos, string, ignore=string.whitespace, fg="", bg="", st=""):
         string = list(map(lambda x: list(x), string.splitlines()))
         for y in range(len(string)):
             for x in range(len(string[y])):
                 if string[y][x] not in ignore:
-                    self._canvas.draw.pixel((x + pos[0], y + pos[1]), string[y][x])
+                    self._canvas.draw.pixel((x + pos[0], y + pos[1]), string[y][x], fg, bg, st)
+                    
+                    
+class _paint:
+    def __init__(self, canvas):
+        self._canvas = canvas
+        
+    def pixel(self, pos, fg="", bg="", st=""):
+        c = (fg, bg, st)
+        for i in range(len(c)):
+            if c[i] != "":
+                self._canvas._out[pos[1]][pos[0]][0][i] = c[i]
+        
+    def line(self, start_pos, end_pos, fg="", bg="", st=""):
+        for i in _getindexes.line(start_pos, end_pos):
+            self._canvas.paint.pixel(i, fg, bg, st)
+
+    def polygon(self, points, fg="", bg="", st=""):
+        for i in _getindexes.polygon(points):
+            self._canvas.paint.pixel(i, fg, bg, st)
 
 
 class library:
@@ -113,17 +151,18 @@ class library:
 
 
 class Canvas:
-    def __init__(self, size, bg=" ", flags=()):
+    def __init__(self, size, flags=()):
         self._out = []
         for y in range(size[1]):
             self._out.append([])
             for x in range(size[0]):
-                self._out[y].append([[], bg])
+                self._out[y].append([["", "", ""], " "])
 
         self._size = size
         self._flags = flags
 
         self.draw = _draw(self)
+        self.paint = _paint(self)
 
     def render(self, colored=True, return_=False):
         out = ""
