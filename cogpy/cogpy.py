@@ -1,3 +1,7 @@
+"""
+Cogpy 0.2.0
+"""
+
 import os
 from time import sleep
 import string
@@ -15,6 +19,11 @@ class _cogpyError(Exception):
 
 def _err(msg):
     raise _cogpyError(msg)
+
+
+def printnln(*args, **kwargs):
+    kwargs["end"] = ""
+    print(*args, **kwargs)
 
 
 class Escape:
@@ -35,12 +44,18 @@ class Escape:
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
 
-    class _color:
-        ...
-
     cursor = _cursor
     clear = _clear
-    color = _color
+
+
+class Color:
+    class bit8:
+        ...
+
+    none = ""
+    set_mode = lambda value: f"\033[={value}h"
+    reset_mode = lambda value: f"\033[={value}l"
+
 
 
 class _getindexes:
@@ -179,10 +194,15 @@ class Canvas:
         else:
             print(Escape.cursor.up()*(len(self._out)), end=out)
 
-    def fill(self, char):
+    def fill(self, char=None, fg="", bg="", st=""):
+        c = (fg, bg, st)
         for y in range(len(self._out)):
             for x in range(len(self._out[y])):
-                self._out[y][x][1] = char
+                if char is not None:
+                    self._out[y][x][1] = char
+                for i in range(len(c)):
+                    if c[i] != "":
+                        self._out[y][x][0][i] = c[i]
 
 
 class time:
