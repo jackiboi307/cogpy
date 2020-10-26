@@ -2,6 +2,7 @@ import sys
 sys.path.append('..')
 sys.path.append("C:\\Users\\jackj\\Documents\\python\\anaconda\\anaconda3\\Lib\\site-packages")
 sys.path.append("c:\\users\\jackj\\appdata\\local\\programs\\python\\python38\\lib\\site-packages")
+
 import cogpy
 
 from random import randint
@@ -15,7 +16,7 @@ cogpy.ready(True)
 while True:
     cogpy.time.tick(60)
     
-    canvas.fill(".", fg=Fore.BLUE, bg=Back.GREEN)
+    canvas.fill(".", fg=Fore.YELLOW, bg=Back.BLUE, st=Style.BRIGHT)
 
     canvas.draw.line((12, 5), (27, 43), "\\", st=Style.BRIGHT)
 
@@ -23,8 +24,10 @@ while True:
 thats a
 good letter
 dadadadadadadda
-""", st=Style.NORMAL)
+""", fg=Fore.YELLOW, st=Style.BRIGHT)
 
-    canvas.draw.polygon(((30, 30), (40, 30), (40, 50), (40, 50)), cogpy.library.block_shades[0], fg=Fore.GREEN)
+    canvas.draw.polygon(((35, 30), (45, 30), (40, 50), (45, 40)), cogpy.library.block_shades[0], fg=Fore.BLUE, st=Style.BRIGHT)
+    
+    canvas.draw.rect((2, 2), (10, 10), "r", fg=Fore.YELLOW)
 
     canvas.render(True)

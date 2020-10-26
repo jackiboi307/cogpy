@@ -1,5 +1,5 @@
 """
-Cogpy 0.2.0
+Cogpy 0.2.1
 """
 
 from os import name
@@ -88,11 +88,7 @@ class _getindexes:
 
     @classmethod
     def rect(cls, start_pos, end_pos):
-        # TODO - skimage._draw.rectangle acts wierd and i cant get it to work, use skimage._draw.polygon until it works
-        #  Also implement so this method calls the polygon method and draws a rect using it
-        ...
-
-    # TODO - Sätt blit satt den endast är i draw
+        return cls.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])))
 
 
 class _draw:
@@ -109,6 +105,10 @@ class _draw:
 
     def polygon(self, points, char, fg="", bg="", st=""):
         for i in _getindexes.polygon(points):
+            self._canvas.draw.pixel(i, char, fg, bg, st)
+
+    def rect(self, start_pos, end_pos, char, fg="", bg="", st=""):
+        for i in _getindexes.rect(start_pos, end_pos):
             self._canvas.draw.pixel(i, char, fg, bg, st)
 
     def blit(self, pos, string, ignore=string.whitespace, fg="", bg="", st=""):
@@ -131,6 +131,10 @@ class _paint:
 
     def line(self, start_pos, end_pos, fg="", bg="", st=""):
         for i in _getindexes.line(start_pos, end_pos):
+            self._canvas.paint.pixel(i, fg, bg, st)
+
+    def rect(self, start_pos, end_pos, fg="", bg="", st=""):
+        for i in _getindexes.rect(start_pos, end_pos):
             self._canvas.paint.pixel(i, fg, bg, st)
 
     def polygon(self, points, fg="", bg="", st=""):
