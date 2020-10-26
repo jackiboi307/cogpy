@@ -1,16 +1,28 @@
-import sys 
+import sys
 sys.path.append('..')
-import cogpy as cog
+sys.path.append("C:\\Users\\jackj\\Documents\\python\\anaconda\\anaconda3\\Lib\\site-packages")
+sys.path.append("c:\\users\\jackj\\appdata\\local\\programs\\python\\python38\\lib\\site-packages")
+import cogpy
 
-console = cog.Console((60, 48))
+from random import randint
+
+canvas = cogpy.Canvas((100, 50), bg=".")
+
+print(end=cogpy.Escape.clear.full())
 
 while True:
-    cog.time.tick(1)
+    cogpy.time.tick(60)
     
-    console.clear()
-    
-    console.draw.pixel((2, 2), "*")
-    
-    console.flip()
-    
-    break
+    canvas.fill(".")
+
+    canvas.draw.line((12, 5), (27, 43), "\\")
+
+    canvas.draw.blit((10, 10), """hhhhhhhhhhh
+thats a
+good letter
+dadadadadadadda
+""")
+
+    canvas.draw.polygon(((30, 30), (40, 30), (40, 50), (40, 50)), cogpy.library.block_shades[0])
+
+    canvas.render(False)
