@@ -1,5 +1,5 @@
 """
-Cogpy 0.4.2
+Cogpy 0.5.0
 """
 
 from os import name
@@ -8,7 +8,7 @@ import string
 from colorama import init
 from math import sin, cos
 from skimage.draw import *
-from pynput import keyboard
+import pynput
 
 init()
 
@@ -211,25 +211,37 @@ class Canvas:
                         self._out[y][x][0][i] = c[i]
 
 
-def _singleton(class_):
-    # sets the class var to True for the given class.
-    # if this var already is True, raise a TypeError.
-    if class_.inited:
-        raise TypeError(f"class {class_.__name__} is a singleton, but multiple instances have been made.")
-    class_.inited = True
-
-
 class keyboard:
     inited = False
 
-    def __init__(self):
-        # check if class is already inited.
-        _singleton(type(self))
+    @classmethod
+    def _init(cls):
+        cls.listener = pynput.keyboard.Listener(
+            on_press=cls._call_keybind)
+        cls.listener.start()
 
-        listener = keyboard.Listener(
-            on_press=on_press,
-            on_release=on_release)
-        listener.start()
+        cls.keybinds = {}
+
+    @classmethod
+    def _call_keybind(cls, key):
+        cls._check_init()
+        cls.keybinds[key]()
+
+    @classmethod
+    def set_keybind(cls, key, command):
+        cls._check_init()
+        cls.keybinds[key] = command
+
+    @classmethod
+    def remove_keybind(cls, key):
+        cls._check_init()
+        del cls.keybinds[key]
+
+    @classmethod
+    def _check_init(cls):
+        if not cls.inited:
+            cls.inited = True
+            cls._init()
 
 
 class time:
