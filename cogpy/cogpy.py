@@ -1,5 +1,5 @@
 """
-Cogpy 0.3.0
+Cogpy 0.4.0
 """
 
 from os import name
