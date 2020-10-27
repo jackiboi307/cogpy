@@ -1,5 +1,5 @@
 """
-Cogpy 0.4.1
+Cogpy 0.4.2
 """
 
 from os import name
@@ -9,7 +9,6 @@ from colorama import init
 from math import sin, cos
 from skimage.draw import *
 from pynput import keyboard
-from numpy import array as nparray
 
 init()
 
@@ -114,7 +113,7 @@ class _draw:
             self._canvas.draw.pixel(i, char, fg, bg, st)
 
     def blit(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
-        if type(content) not in (nparray, list, tuple):
+        if type(content) not in (list, tuple):
             content = list(map(lambda x: list(x), content.splitlines()))
         for y in range(len(content)):
             for x in range(len(content[y])):
