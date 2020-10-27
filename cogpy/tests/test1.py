@@ -1,12 +1,7 @@
 import sys
 sys.path.append('..')
-sys.path.append("C:\\Users\\jackj\\Documents\\python\\anaconda\\anaconda3\\Lib\\site-packages")
-sys.path.append("c:\\users\\jackj\\appdata\\local\\programs\\python\\python38\\lib\\site-packages")
-
 import cogpy
-
 from random import randint
-
 from colorama import Fore, Back, Style
 
 canvas = cogpy.Canvas((100, 50))

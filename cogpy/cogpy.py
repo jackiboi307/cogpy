@@ -1,5 +1,5 @@
 """
-Cogpy 0.2.1
+Cogpy 0.3.0
 """
 
 from os import name
@@ -8,6 +8,7 @@ import string
 from colorama import init
 from math import sin, cos
 from skimage.draw import *
+from pynput import keyboard
 
 init()
 
@@ -28,11 +29,11 @@ def printnln(*args, **kwargs):
 
 def ready(check=True):
     if name == "posix" and check:
-        printnln(Escape.cursor.hide())
-        printnln(Escape.clear.full())
+        printnln(escape.cursor.hide())
+        printnln(escape.clear.full())
 
 
-class Escape:
+class escape:
     class _cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
         move1 = lambda x=0, y=0: f"\033[{y};{x}H"
@@ -126,7 +127,7 @@ class _paint:
     def pixel(self, pos, fg="", bg="", st=""):
         c = (fg, bg, st)
         for i in range(len(c)):
-            if c[i] != "":
+            if c[i] is not None:
                 self._canvas._out[pos[1]][pos[0]][0][i] = c[i]
 
     def line(self, start_pos, end_pos, fg="", bg="", st=""):
@@ -182,7 +183,7 @@ class Canvas:
         self.draw = _draw(self)
         self.paint = _paint(self)
 
-    def render(self, colored=True, return_=False):
+    def render(self, colored=True, give=False):
         out = ""
         for y in self._out:
             for x in range(len(y)):
@@ -192,10 +193,10 @@ class Canvas:
                     out += y[x][1]
             if y != len(y) - 1:
                 out += "\n"
-        if return_:
+        if give:
             return out
         else:
-            printnln(Escape.cursor.up()*len(self._out))
+            printnln(escape.cursor.up() * len(self._out))
             printnln(out)
 
     def fill(self, char=None, fg="", bg="", st=""):
@@ -205,8 +206,29 @@ class Canvas:
                 if char is not None:
                     self._out[y][x][1] = char
                 for i in range(len(c)):
-                    if c[i] != "":
+                    if c[i] != None:
                         self._out[y][x][0][i] = c[i]
+
+
+def _singleton(class_):
+    # sets the class var to True for the given class.
+    # if this var already is True, raise a TypeError.
+    if class_.inited:
+        raise TypeError(f"class {class_.__name__} is a singleton, but multiple instances have been made.")
+    class_.inited = True
+
+
+class keyboard:
+    inited = False
+
+    def __init__(self):
+        # check if class is already inited.
+        _singleton(type(self))
+
+        listener = keyboard.Listener(
+            on_press=on_press,
+            on_release=on_release)
+        listener.start()
 
 
 class time:
