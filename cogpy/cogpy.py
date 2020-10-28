@@ -1,5 +1,5 @@
 """
-Cogpy 0.6.0
+Cogpy 0.7.0
 """
 
 from os import name
@@ -141,10 +141,12 @@ class _paint:
             self._canvas.paint.pixel(i, fg, bg, st)
 
 
-class library:
+class chars:
     # TODO - ge denna sablans klass ett bättre namn!
 
-    block_shades = ["█", "▓", "▒", "░"]
+    block_shade = "█▓▒░ "
+    ascii_shade_1 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
+    ascii_shade_2 = "@%#*+=-:. "
 
     @staticmethod
     def make_block(ul, ur, bl, br):
