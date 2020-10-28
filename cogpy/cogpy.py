@@ -211,39 +211,6 @@ class Canvas:
                         self._out[y][x][0][i] = c[i]
 
 
-class keyboard:
-    inited = False
-
-    @classmethod
-    def _init(cls):
-        cls.listener = pynput.keyboard.Listener(
-            on_press=cls._call_keybind)
-        cls.listener.start()
-
-        cls.keybinds = {}
-
-    @classmethod
-    def _call_keybind(cls, key):
-        cls._check_init()
-        cls.keybinds[key]()
-
-    @classmethod
-    def set_keybind(cls, key, command):
-        cls._check_init()
-        cls.keybinds[key] = command
-
-    @classmethod
-    def remove_keybind(cls, key):
-        cls._check_init()
-        del cls.keybinds[key]
-
-    @classmethod
-    def _check_init(cls):
-        if not cls.inited:
-            cls.inited = True
-            cls._init()
-
-
 class time:
     @staticmethod
     def tick(fps):
