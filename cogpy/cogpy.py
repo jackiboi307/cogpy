@@ -1,5 +1,5 @@
 """
-Cogpy 0.5.0
+Cogpy 0.6.0
 """
 
 from os import name
@@ -34,7 +34,7 @@ def ready(check=True):
 
 
 class escape:
-    class _cursor:
+    class cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
         move1 = lambda x=0, y=0: f"\033[{y};{x}H"
         move2 = lambda x=0, y=0: f"\033[{y};{x}f"
@@ -50,12 +50,9 @@ class escape:
         hide = lambda: "\033[?25l"
         show = lambda: "\033[?25h"
 
-    class _clear:
+    class clear:
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
-
-    cursor = _cursor
-    clear = _clear
 
 
 class _getindexes:
