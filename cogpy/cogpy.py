@@ -1,5 +1,5 @@
 """
-Cogpy 0.7.0
+Cogpy 0.7.1
 """
 
 from os import name
@@ -27,10 +27,7 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
-def ready(check=True):
-    if name == "posix" and check:
-        printnln(escape.cursor.hide())
-        printnln(escape.clear.full())
+# TODO - Introducera en klass för att hantera konsolen, t ex stoppa buffering
 
 
 class escape:
@@ -206,7 +203,7 @@ class Canvas:
                 if char is not None:
                     self._out[y][x][1] = char
                 for i in range(len(c)):
-                    if c[i] != None:
+                    if c[i] is not None:
                         self._out[y][x][0][i] = c[i]
 
 
