@@ -1,5 +1,8 @@
-cogpy 0.7.1 -
+cogpy 0.7.2 -
   console tools for python, such as console graphics.
+  
+  New -
+    zip() is used instead of _convert() in _getindexes
 
   Installation -
     pip -
