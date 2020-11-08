@@ -1,5 +1,5 @@
 """
-Cogpy 0.7.1
+Cogpy 0.7.2
 """
 
 from os import name
@@ -27,10 +27,12 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
-# TODO - Introducera en klass för att hantera konsolen, t ex stoppa buffering
+# TODO - A class for managing the console, such as buffering options etc
+# TODO - A class for ANSI color escape sequences
 
 
 class escape:
+
     class cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
         move1 = lambda x=0, y=0: f"\033[{y};{x}H"
@@ -48,6 +50,10 @@ class escape:
         show = lambda: "\033[?25h"
 
     class clear:
+        """
+        Clear the console.
+        """
+
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
 
@@ -56,18 +62,8 @@ class _getindexes:
     # TODO - Implement a method for almost all functions in scikit_image._draw
 
     @classmethod
-    def _convert(cls, output):
-        output = list(output)
-        rr, cc = output[0], output[1]
-        rr, cc = list(rr), list(cc)
-        indexes = []
-        for i in range(len(rr)):
-            indexes.append((rr[i], cc[i]))
-        return indexes
-
-    @classmethod
     def line(cls, start_pos, end_pos):
-        return cls._convert(line(*start_pos, *end_pos))
+        return zip(*line(*start_pos, *end_pos))
 
     @classmethod
     def polygon(cls, points):
@@ -79,7 +75,7 @@ class _getindexes:
                 y.append(z[i][1])
             return (x, y)
 
-        return cls._convert(polygon(*rc_to_2d(points)))
+        return zip(*polygon(*rc_to_2d(points)))
 
     @classmethod
     def rect(cls, start_pos, end_pos):
@@ -95,16 +91,16 @@ class _draw:
         self._canvas.paint.pixel(pos, fg, bg, st)
 
     def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
-        for i in _getindexes.line(start_pos, end_pos):
-            self._canvas.draw.pixel(i, char, fg, bg, st)
+        for pos in _getindexes.line(start_pos, end_pos):
+            self._canvas.draw.pixel(pos, char, fg, bg, st)
 
     def polygon(self, points, char, fg="", bg="", st=""):
-        for i in _getindexes.polygon(points):
-            self._canvas.draw.pixel(i, char, fg, bg, st)
+        for pos in _getindexes.polygon(points):
+            self._canvas.draw.pixel(pos, char, fg, bg, st)
 
     def rect(self, start_pos, end_pos, char, fg="", bg="", st=""):
-        for i in _getindexes.rect(start_pos, end_pos):
-            self._canvas.draw.pixel(i, char, fg, bg, st)
+        for pos in _getindexes.rect(start_pos, end_pos):
+            self._canvas.draw.pixel(pos, char, fg, bg, st)
 
     def blit(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
         if type(content) not in (list, tuple):
