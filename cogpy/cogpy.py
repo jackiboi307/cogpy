@@ -1,5 +1,5 @@
 """
-Cogpy 0.7.2
+Cogpy 0.7.3
 """
 
 from os import name
@@ -50,10 +50,6 @@ class escape:
         show = lambda: "\033[?25h"
 
     class clear:
-        """
-        Clear the console.
-        """
-
         full = lambda: "\033[2J"
         line = lambda: "\033[K"
 
