@@ -1,9 +1,5 @@
-cogpy 0.7.3 -
+cogpy 1.0.1 -
   console tools for python, such as console graphics.
-  
-  New -
-    zip() is used instead of _convert() in _getindexes
-    Removed a docstring.
 
   Installation -
     pip -
