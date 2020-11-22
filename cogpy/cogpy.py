@@ -234,12 +234,24 @@ class DoubleBufferCanvas(Canvas):
         self.ns.SetConsoleActiveScreenBuffer()
 
     def render(self, colored=True, give=False, y=0):
-        for y in range(len(text.splitlines())):
-            self.ns.WriteConsoleOutputCharacter(text.splitlines()[y], win32console.PyCOORDType(0, y))
-
-        self.next_screen = 1 - self.active_screen
-        self.ns = self.screens[self.next_screen]
-        self.ns.SetConsoleActiveScreenBuffer()
+        out = ""
+        for y in self._out:
+            for x in range(len(y)):
+                if colored:
+                    out += "".join(y[x][0]) + y[x][1] + "\033[0m"
+                else:
+                    out += y[x][1]
+            if y != len(y) - 1:
+                out += "\n"
+        if give:
+            return out
+        else:
+            for y in range(len(out.splitlines())):
+                self.ns.WriteConsoleOutputCharacter(out.splitlines()[y], win32console.PyCOORDType(0, y))
+    
+            self.next_screen = 1 - self.active_screen
+            self.ns = self.screens[self.next_screen]
+            self.ns.SetConsoleActiveScreenBuffer()
 
     @classmethod
     def render_canvasses(cls, *canvasses):
