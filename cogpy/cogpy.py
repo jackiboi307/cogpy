@@ -1,5 +1,5 @@
 """
-Cogpy 1.0.1
+Cogpy 1.0.2
 """
 
 import string
