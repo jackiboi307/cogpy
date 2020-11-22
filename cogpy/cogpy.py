@@ -1,14 +1,14 @@
 """
-Cogpy 0.7.3
+Cogpy 1.0.0
 """
 
-from os import name
-from time import sleep
 import string
+from time import sleep
+
+import win32con
+import win32console
 from colorama import init
-from math import sin, cos
 from skimage.draw import *
-import pynput
 
 init()
 
@@ -27,12 +27,11 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
-# TODO - A class for managing the console, such as buffering options etc
+# TODO - A class for managing the console
 # TODO - A class for ANSI color escape sequences
 
 
 class escape:
-
     class cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
         move1 = lambda x=0, y=0: f"\033[{y};{x}H"
@@ -69,7 +68,7 @@ class _getindexes:
             for i in range(len(z)):
                 x.append(z[i][0])
                 y.append(z[i][1])
-            return (x, y)
+            return x, y
 
         return zip(*polygon(*rc_to_2d(points)))
 
@@ -79,58 +78,58 @@ class _getindexes:
 
 
 class _draw:
-    def __init__(self, canvas):
-        self._canvas = canvas
+    def __init__(self, surface):
+        self._surface = surface
 
     def pixel(self, pos, char, fg="", bg="", st=""):
-        self._canvas._out[pos[1]][pos[0]][1] = char
-        self._canvas.paint.pixel(pos, fg, bg, st)
+        self._surface._out[pos[1]][pos[0]][1] = char
+        self._surface.paint.pixel(pos, fg, bg, st)
 
     def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
         for pos in _getindexes.line(start_pos, end_pos):
-            self._canvas.draw.pixel(pos, char, fg, bg, st)
+            self._surface.draw.pixel(pos, char, fg, bg, st)
 
     def polygon(self, points, char, fg="", bg="", st=""):
         for pos in _getindexes.polygon(points):
-            self._canvas.draw.pixel(pos, char, fg, bg, st)
+            self._surface.draw.pixel(pos, char, fg, bg, st)
 
     def rect(self, start_pos, end_pos, char, fg="", bg="", st=""):
         for pos in _getindexes.rect(start_pos, end_pos):
-            self._canvas.draw.pixel(pos, char, fg, bg, st)
+            self._surface.draw.pixel(pos, char, fg, bg, st)
 
-    def blit(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
+    def put(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
         if type(content) not in (list, tuple):
             content = list(map(lambda x: list(x), content.splitlines()))
         for y in range(len(content)):
             for x in range(len(content[y])):
                 if content[y][x] not in ignore:
-                    self._canvas.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg, st)
+                    self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg, st)
 
 
 class _paint:
-    def __init__(self, canvas):
-        self._canvas = canvas
+    def __init__(self, surface):
+        self._surface = surface
 
     def pixel(self, pos, fg="", bg="", st=""):
         c = (fg, bg, st)
         for i in range(len(c)):
             if c[i] is not None:
-                self._canvas._out[pos[1]][pos[0]][0][i] = c[i]
+                self._surface._out[pos[1]][pos[0]][0][i] = c[i]
 
     def line(self, start_pos, end_pos, fg="", bg="", st=""):
         for i in _getindexes.line(start_pos, end_pos):
-            self._canvas.paint.pixel(i, fg, bg, st)
+            self._surface.paint.pixel(i, fg, bg, st)
 
     def rect(self, start_pos, end_pos, fg="", bg="", st=""):
         for i in _getindexes.rect(start_pos, end_pos):
-            self._canvas.paint.pixel(i, fg, bg, st)
+            self._surface.paint.pixel(i, fg, bg, st)
 
     def polygon(self, points, fg="", bg="", st=""):
         for i in _getindexes.polygon(points):
-            self._canvas.paint.pixel(i, fg, bg, st)
+            self._surface.paint.pixel(i, fg, bg, st)
 
 
-class chars:
+class misc:
     # TODO - ge denna sablans klass ett bättre namn!
 
     block_shade = "█▓▒░ "
@@ -158,8 +157,8 @@ class chars:
                 }[str(int(ul)) + str(int(ur)) + str(int(bl)) + str(int(br))]
 
 
-class Canvas:
-    def __init__(self, size, flags=()):
+class Surface:
+    def __init__(self, size):
         self._out = []
         for y in range(size[1]):
             self._out.append([])
@@ -167,10 +166,26 @@ class Canvas:
                 self._out[y].append([["", "", ""], " "])
 
         self._size = size
-        self._flags = flags
 
         self.draw = _draw(self)
         self.paint = _paint(self)
+
+    def fill(self, char=None, fg="", bg="", st=""):
+        c = (fg, bg, st)
+        for y in range(len(self._out)):
+            for x in range(len(self._out[y])):
+                if char is not None:
+                    self._out[y][x][1] = char
+                for i in range(len(c)):
+                    if c[i] is not None:
+                        self._out[y][x][0][i] = c[i]
+
+
+class Canvas(Surface):
+    def __init__(self, size, surface=None):
+        super().__init__(size)
+        if surface is not None:
+            self._out = surface._out
 
     def render(self, colored=True, give=False):
         out = ""
@@ -185,18 +200,65 @@ class Canvas:
         if give:
             return out
         else:
-            printnln(escape.cursor.up() * len(self._out))
-            printnln(out)
+            printnln(escape.cursor.up(len(self._out)) + out)
 
-    def fill(self, char=None, fg="", bg="", st=""):
-        c = (fg, bg, st)
-        for y in range(len(self._out)):
-            for x in range(len(self._out[y])):
-                if char is not None:
-                    self._out[y][x][1] = char
-                for i in range(len(c)):
-                    if c[i] is not None:
-                        self._out[y][x][0][i] = c[i]
+    def blit(self, surface, pos):
+        for y in range(len(surface._out)):
+            for x in range(len(surface._out[y])):
+                self._out[pos[1] + y][pos[0] + x] = surface[pos[1] + y][pos[0] + x]
+
+    @classmethod
+    def render_canvasses(cls, canvasses, options=None):
+        for canvas in canvasses:
+            if options is None:
+                canvas.render()
+            else:
+                canvas.render(**options)
+
+
+class DoubleBufferCanvas(Canvas):
+    def __init__(self, size):
+        super().__init__(size)
+
+        self.active_screen = 0
+        self.screens = [
+            win32console.CreateConsoleScreenBuffer(DesiredAccess=win32con.GENERIC_READ | win32con.GENERIC_WRITE,
+                                                   ShareMode=0, SecurityAttributes=None, Flags=1),
+            win32console.CreateConsoleScreenBuffer(DesiredAccess=win32con.GENERIC_READ | win32con.GENERIC_WRITE,
+                                                   ShareMode=0, SecurityAttributes=None, Flags=1)
+        ]
+        self.screens[self.active_screen].SetConsoleActiveScreenBuffer()
+
+        self.next_screen = 1 - self.active_screen
+        self.ns = self.screens[self.next_screen]
+        self.ns.SetConsoleActiveScreenBuffer()
+
+    def render(self, colored=True, give=False, y=0):
+        for y in range(len(text.splitlines())):
+            self.ns.WriteConsoleOutputCharacter(text.splitlines()[y], win32console.PyCOORDType(0, y))
+
+        self.next_screen = 1 - self.active_screen
+        self.ns = self.screens[self.next_screen]
+        self.ns.SetConsoleActiveScreenBuffer()
+
+    @classmethod
+    def render_canvasses(cls, *canvasses):
+        options = canvasses[-1]
+        del canvasses[-1]
+
+        if options is not None:
+            options["y"] = 0
+
+        y = 0
+        for canvas in canvasses:
+            if type(canvas) is not DoubleBufferCanvas:
+                raise
+            else:
+                if options is None:
+                    canvas.render(y=y)
+                else:
+                    canvas.render(**options)
+                y += len(canvas._out)
 
 
 class time:
