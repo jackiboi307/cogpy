@@ -1,5 +1,5 @@
 """
-Cogpy 1.0.2
+Cogpy 1.0.1
 """
 
 import string
@@ -248,7 +248,7 @@ class DoubleBufferCanvas(Canvas):
         else:
             for y in range(len(out.splitlines())):
                 self.ns.WriteConsoleOutputCharacter(out.splitlines()[y], win32console.PyCOORDType(0, y))
-    
+
             self.next_screen = 1 - self.active_screen
             self.ns = self.screens[self.next_screen]
             self.ns.SetConsoleActiveScreenBuffer()
@@ -264,14 +264,11 @@ class DoubleBufferCanvas(Canvas):
 
         y = 0
         for canvas in canvasses:
-            if type(canvas) is not DoubleBufferCanvas:
-                raise
+            if options is None:
+                canvas.render(y=y)
             else:
-                if options is None:
-                    canvas.render(y=y)
-                else:
-                    canvas.render(**options)
-                y += len(canvas._out)
+                canvas.render(**options)
+            y += len(canvas._out)
 
 
 class time:
