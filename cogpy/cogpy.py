@@ -1,5 +1,5 @@
 """
-Cogpy 1.0.0
+Cogpy 1.0.1
 """
 
 import string
@@ -244,6 +244,7 @@ class DoubleBufferCanvas(Canvas):
     @classmethod
     def render_canvasses(cls, *canvasses):
         options = canvasses[-1]
+        canvasses = list(canvasses)
         del canvasses[-1]
 
         if options is not None:
