@@ -1,5 +1,5 @@
 """
-Cogpy 1.0.3
+Cogpy 1.0.4
 """
 
 import string
@@ -208,7 +208,12 @@ class Canvas(Surface):
                 self._out[pos[1] + y][pos[0] + x] = surface[pos[1] + y][pos[0] + x]
 
     @classmethod
-    def render_canvasses(cls, canvasses, options=None):
+    def render_canvasses(cls, *args):
+        options = args[-1]
+        canvasses = list(args)
+        del args
+        del canvasses[-1]
+
         for canvas in canvasses:
             if options is None:
                 canvas.render()
@@ -254,9 +259,10 @@ class DoubleBufferCanvas(Canvas):
             self.ns.SetConsoleActiveScreenBuffer()
 
     @classmethod
-    def render_canvasses(cls, *canvasses):
-        options = canvasses[-1]
-        canvasses = list(canvasses)
+    def render_canvasses(cls, *args):
+        options = args[-1]
+        canvasses = list(args)
+        del args
         del canvasses[-1]
 
         if options is not None:
