@@ -2,8 +2,6 @@
 Cogpy 1.0.4
 """
 
-# ufeufweufewifewuh
-
 import string
 from time import sleep
 
@@ -227,6 +225,7 @@ class DoubleBufferCanvas(Canvas):
     def __init__(self, size):
         super().__init__(size)
 
+        stdcon = win32console.GetStdHandle(win32console.STD_OUTPUT_HANDLE)
         self.active_screen = 0
         self.screens = [
             win32console.CreateConsoleScreenBuffer(DesiredAccess=win32con.GENERIC_READ | win32con.GENERIC_WRITE,
@@ -234,11 +233,20 @@ class DoubleBufferCanvas(Canvas):
             win32console.CreateConsoleScreenBuffer(DesiredAccess=win32con.GENERIC_READ | win32con.GENERIC_WRITE,
                                                    ShareMode=0, SecurityAttributes=None, Flags=1)
         ]
-        self.screens[self.active_screen].SetConsoleActiveScreenBuffer()
 
+        self.screens[self.active_screen].SetConsoleActiveScreenBuffer()
+        self.cursor_size, _ = stdcon.GetConsoleCursorInfo()
         self.next_screen = 1 - self.active_screen
         self.ns = self.screens[self.next_screen]
         self.ns.SetConsoleActiveScreenBuffer()
+
+    def show_cursor(self):
+        for it in self.screens:
+            it.SetConsoleCursorInfo(self.cursor_size, True)
+
+    def hide_cursor(self):
+        for it in self.screens:
+            it.SetConsoleCursorInfo(self.cursor_size, False)
 
     def render(self, colored=True, give=False, y=0):
         out = ""
