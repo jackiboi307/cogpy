@@ -1,5 +1,5 @@
 """
-Cogpy 1.2.0
+Cogpy 1.3.0
 """
 
 import string
@@ -27,8 +27,16 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
-# TODO - A class for managing the console
-# TODO - A class for ANSI color escape sequences
+class color:
+    class wincolor:
+        FOREGROUND_BLUE = win32console.FOREGROUND_BLUE
+        FOREGROUND_GREEN = win32console.FOREGROUND_GREEN
+        FOREGROUND_RED = win32console.FOREGROUND_RED
+        FOREGROUND_INTENSITY = win32console.FOREGROUND_INTENSITY
+        BACKGROUND_BLUE = win32console.BACKGROUND_BLUE
+        BACKGROUND_GREEN = win32console.BACKGROUND_GREEN
+        BACKGROUND_RED = win32console.BACKGROUND_RED
+        BACKGROUND_INTENSITY = win32console.BACKGROUND_INTENSITY
 
 
 class escape:
@@ -215,20 +223,23 @@ class DoubleBufferCanvas(Canvas):
             it.SetConsoleCursorInfo(self.cursor_size, False)
 
     def render(self, colored=True, give=False, y=0):
-        out = ""
+        out_text = [""]
+        out_colors = [""]
         for y in self._out:
             for x in range(len(y)):
                 if colored:
-                    out += "".join(y[x][0]) + y[x][1] + "\033[0m"
+                    out_text[-1] += y[x][1]
+                    out_colors[-1] += "".join(y[x][0])
                 else:
                     out += y[x][1]
-            if y != len(y) - 1:
-                out += "\n"
+            out_text.append("")
+            out_colors.append("")
         if give:
             return out
         else:
-            for y in range(len(out.splitlines())):
-                self.ns.WriteConsoleOutputCharacter(out.splitlines()[y], win32console.PyCOORDType(0, y))
+            for y in range(len(out_text)):
+                self.ns.WriteConsoleOutputCharacter(out_text[y], win32console.PyCOORDType(0, y))
+                self.ns.WriteConsoleOutputAttribute(out_colors[y], win32console.PyCOORDType(0, y))
 
             self.next_screen = 1 - self.active_screen
             self.ns = self.screens[self.next_screen]
