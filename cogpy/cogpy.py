@@ -231,7 +231,7 @@ class DoubleBufferCanvas(Canvas):
                     out_text[-1] += y[x][1]
                     out_colors[-1] += "".join(y[x][0])
                 else:
-                    out += y[x][1]
+                    out_text[-1] += y[x][1]
             out_text.append("")
             out_colors.append("")
         if give:
