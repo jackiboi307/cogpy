@@ -1,5 +1,5 @@
 """
-Cogpy 1.3.1
+Cogpy 1.3.2
 """
 
 import string
@@ -29,14 +29,14 @@ def printnln(*args, **kwargs):
 
 class color:
     class win:
-        FOREGROUND_BLUE = win32console.FOREGROUND_BLUE
-        FOREGROUND_GREEN = win32console.FOREGROUND_GREEN
-        FOREGROUND_RED = win32console.FOREGROUND_RED
-        FOREGROUND_INTENSITY = win32console.FOREGROUND_INTENSITY
-        BACKGROUND_BLUE = win32console.BACKGROUND_BLUE
-        BACKGROUND_GREEN = win32console.BACKGROUND_GREEN
-        BACKGROUND_RED = win32console.BACKGROUND_RED
-        BACKGROUND_INTENSITY = win32console.BACKGROUND_INTENSITY
+        FGB = win32console.FOREGROUND_BLUE
+        FGG = win32console.FOREGROUND_GREEN
+        FGR = win32console.FOREGROUND_RED
+        FGI = win32console.FOREGROUND_INTENSITY
+        BGB = win32console.BACKGROUND_BLUE
+        BGG = win32console.BACKGROUND_GREEN
+        BGR = win32console.BACKGROUND_RED
+        BGI = win32console.BACKGROUND_INTENSITY
 
 
 class escape:
