@@ -1,5 +1,5 @@
 """
-Cogpy 1.1.0
+Cogpy 1.2.0
 """
 
 import string
@@ -82,8 +82,13 @@ class _draw:
         self._surface = surface
 
     def pixel(self, pos, char, fg="", bg="", st=""):
-        self._surface._out[pos[1]][pos[0]][1] = char
-        self._surface.paint.pixel(pos, fg, bg, st)
+        if (0 <= pos[0] < self._surface._size[0]) and (0 <= pos[1] < self._surface._size[1]):
+            if char is not None:
+                self._surface._out[pos[1]][pos[0]][1] = char
+            c = (fg, bg, st)
+            for i in range(len(c)):
+                if c[i] is not None:
+                    self._surface._out[pos[1]][pos[0]][0][i] = c[i]
 
     def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
         for pos in _getindexes.line(start_pos, end_pos):
@@ -103,30 +108,8 @@ class _draw:
         for y in range(len(content)):
             for x in range(len(content[y])):
                 if content[y][x] not in ignore:
-                    self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg, st)
-
-
-class _paint:
-    def __init__(self, surface):
-        self._surface = surface
-
-    def pixel(self, pos, fg="", bg="", st=""):
-        c = (fg, bg, st)
-        for i in range(len(c)):
-            if c[i] is not None:
-                self._surface._out[pos[1]][pos[0]][0][i] = c[i]
-
-    def line(self, start_pos, end_pos, fg="", bg="", st=""):
-        for i in _getindexes.line(start_pos, end_pos):
-            self._surface.paint.pixel(i, fg, bg, st)
-
-    def rect(self, start_pos, end_pos, fg="", bg="", st=""):
-        for i in _getindexes.rect(start_pos, end_pos):
-            self._surface.paint.pixel(i, fg, bg, st)
-
-    def polygon(self, points, fg="", bg="", st=""):
-        for i in _getindexes.polygon(points):
-            self._surface.paint.pixel(i, fg, bg, st)
+                    if (0 <= x < self._surface._size[0]) and (0 <= y < self._surface._size[1]):
+                        self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg, st)
 
 
 class misc:
@@ -138,23 +121,7 @@ class misc:
 
     @staticmethod
     def make_block(ul, ur, bl, br):
-        return {"0000": " ",
-                "0001": "▗",
-                "0010": "▖",
-                "0011": "▄",
-                "0100": "▝",
-                "0101": "▐",
-                "0110": "▞",
-                "0111": "▟",
-                "1000": "▘",
-                "1001": "▚",
-                "1010": "▌",
-                "1011": "▙",
-                "1100": "▀",
-                "1101": "▜",
-                "1110": "▛",
-                "1111": "█"
-                }[str(int(ul)) + str(int(ur)) + str(int(bl)) + str(int(br))]
+        return {"0000": " ", "0001": "▗", "0010": "▖", "0011": "▄", "0100": "▝", "0101": "▐", "0110": "▞", "0111": "▟", "1000": "▘", "1001": "▚", "1010": "▌", "1011": "▙", "1100": "▀", "1101": "▜", "1110": "▛", "1111": "█"}[str(int(ul)) + str(int(ur)) + str(int(bl)) + str(int(br))]
 
 
 class Surface:
@@ -168,7 +135,6 @@ class Surface:
         self._size = size
 
         self.draw = _draw(self)
-        self.paint = _paint(self)
 
     def fill(self, char=None, fg="", bg="", st=""):
         c = (fg, bg, st)
