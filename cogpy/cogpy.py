@@ -1,5 +1,5 @@
 """
-Cogpy 1.4.3
+Cogpy 1.4.4
 """
 
 import string
@@ -30,10 +30,11 @@ def printnln(*args, **kwargs):
 
 
 class color:
-    class name:
-        @classmethod
-        def __getattr__(cls, item):
+    class _name:
+        def __getattr__(self, item):
             return color_names[item.upper()]
+
+    name = _name()
 
 
 class escape:
@@ -62,6 +63,25 @@ class _draw:
     def __init__(self, surface):
         self._surface = surface
 
+    def _db_pixel(self, pos, char, **kwargs):
+        if "fg" in kwargs:
+            if kwargs["fg"] is not None:
+                fg, self._surface._out[pos[1]][pos[0]][0][0] = tuple([kwargs["fg"]]*2)
+            else:
+                fg = self._surface._out[pos[1]][pos[0]][0][0]
+        else:
+            fg = 256
+        if "bg" in kwargs:
+            if kwargs["bg"] is not None:
+                bg, self._surface._out[pos[1]][pos[0]][0][1] = tuple([kwargs["fg"]]*2)
+            else:
+                bg = self._surface._out[pos[1]][pos[0]][0][1]
+        else:
+            bg = 256
+        if char is not None:
+            self._surface.ns.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
+        self._surface.ns.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
+
     def pixel(self, pos, char, fg="", bg=""):
         if (0 <= pos[0] < self._surface._size[0]) and (0 <= pos[1] < self._surface._size[1]):
             if char is not None:
@@ -73,7 +93,7 @@ class _draw:
 
     def line(self, start_pos, end_pos, char, fg="", bg=""):
         for pos in zip(*line(*start_pos, *end_pos)):
-            self._surface.draw.pixel(pos, char, fg, bg)
+            self._surface.draw.pixel(pos, char, fg=fg, bg=bg)
 
     def polygon(self, points, char, fg="", bg=""):
         def unzip(z):
@@ -85,10 +105,11 @@ class _draw:
             return x, y
 
         for pos in zip(*polygon(*unzip(points))):
-            self._surface.draw.pixel(pos, char, fg, bg)
+            self._surface.draw.pixel(pos, char, fg=fg, bg=bg)
 
     def rect(self, start_pos, end_pos, char, fg="", bg=""):
-        self._surface.draw.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])), char, fg, bg)
+        self._surface.draw.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])), char,
+                                   fg=fg, bg=bg)
 
     def put(self, pos, content, ignore=string.whitespace, fg="", bg=""):
         if type(content) not in (list, tuple):
@@ -97,7 +118,7 @@ class _draw:
             for x in range(len(content[y])):
                 if content[y][x] not in ignore:
                     if (0 <= x < self._surface._size[0]) and (0 <= y < self._surface._size[1]):
-                        self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg)
+                        self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg=fg, bg=bg)
 
 
 class misc:
@@ -147,7 +168,8 @@ class Canvas(Surface):
         out = ""
         for y in self._out:
             for x in range(len(y)):
-                out += ("".join(y[x][0]) if colored else "") + (y[x][1] if text else "") + ("\033[0m" if colored else "")
+                out += ("".join(y[x][0]) if colored else "") + (y[x][1] if text else "") + (
+                    "\033[0m" if colored else "")
             if y != len(y) - 1:
                 out += "\n"
         if give:
@@ -178,13 +200,7 @@ class DoubleBufferCanvas(Canvas):
     def __init__(self, size):
         super().__init__(size)
 
-        printnln(escape.clear.full())
-
-        # gamla linjen
-        def draw_pixel(self_, pos, char, fg="", bg=""):
-            self_.ns.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
-            self_.ns.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
-        self.draw.pixel = draw_pixel
+        self.draw.pixel = self.draw._db_pixel
 
         stdcon = win32console.GetStdHandle(win32console.STD_OUTPUT_HANDLE)
         self.active_screen = 0
