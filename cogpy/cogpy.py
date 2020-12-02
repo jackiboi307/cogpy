@@ -1,5 +1,5 @@
 """
-Cogpy 1.3.2
+Cogpy 1.4.0
 """
 
 import string
@@ -9,6 +9,8 @@ import win32con
 import win32console
 from colorama import init
 from skimage.draw import *
+
+from color_names import color_names
 
 init()
 
@@ -25,6 +27,13 @@ def _err(msg):
 def printnln(*args, **kwargs):
     kwargs["end"] = ""
     print(*args, **kwargs)
+
+
+class color:
+    class name:
+        @classmethod
+        def __getattr__(cls, item):
+            return color_names[item.upper()]
 
 
 class escape:
