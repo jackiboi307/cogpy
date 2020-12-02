@@ -1,5 +1,5 @@
 """
-Cogpy 1.4.0
+Cogpy 1.4.1
 """
 
 import string
@@ -62,20 +62,20 @@ class _draw:
     def __init__(self, surface):
         self._surface = surface
 
-    def pixel(self, pos, char, fg="", bg="", st=""):
+    def pixel(self, pos, char, fg="", bg=""):
         if (0 <= pos[0] < self._surface._size[0]) and (0 <= pos[1] < self._surface._size[1]):
             if char is not None:
                 self._surface._out[pos[1]][pos[0]][1] = char
-            c = (fg, bg, st)
+            c = (fg, bg)
             for i in range(len(c)):
                 if c[i] is not None:
                     self._surface._out[pos[1]][pos[0]][0][i] = c[i]
 
-    def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
+    def line(self, start_pos, end_pos, char, fg="", bg=""):
         for pos in zip(*line(*start_pos, *end_pos)):
-            self._surface.draw.pixel(pos, char, fg, bg, st)
+            self._surface.draw.pixel(pos, char, fg, bg)
 
-    def polygon(self, points, char, fg="", bg="", st=""):
+    def polygon(self, points, char, fg="", bg=""):
         def unzip(z):
             x = []
             y = []
@@ -85,19 +85,19 @@ class _draw:
             return x, y
 
         for pos in zip(*polygon(*unzip(points))):
-            self._surface.draw.pixel(pos, char, fg, bg, st)
+            self._surface.draw.pixel(pos, char, fg, bg)
 
-    def rect(self, start_pos, end_pos, char, fg="", bg="", st=""):
-        self._surface.draw.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])), char, fg, bg, st)
+    def rect(self, start_pos, end_pos, char, fg="", bg=""):
+        self._surface.draw.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])), char, fg, bg)
 
-    def put(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
+    def put(self, pos, content, ignore=string.whitespace, fg="", bg=""):
         if type(content) not in (list, tuple):
             content = list(map(lambda x: list(x), content.splitlines()))
         for y in range(len(content)):
             for x in range(len(content[y])):
                 if content[y][x] not in ignore:
                     if (0 <= x < self._surface._size[0]) and (0 <= y < self._surface._size[1]):
-                        self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg, st)
+                        self._surface.draw.pixel((x + pos[0], y + pos[1]), content[y][x], fg, bg)
 
 
 class misc:
@@ -120,14 +120,14 @@ class Surface:
         for y in range(size[1]):
             self._out.append([])
             for x in range(size[0]):
-                self._out[y].append([["", "", ""], " "])
+                self._out[y].append([["", ""], " "])
 
         self._size = size
 
         self.draw = _draw(self)
 
-    def fill(self, char=None, fg="", bg="", st=""):
-        c = (fg, bg, st)
+    def fill(self, char=None, fg="", bg=""):
+        c = (fg, bg)
         for y in range(len(self._out)):
             for x in range(len(self._out[y])):
                 if char is not None:
@@ -181,9 +181,9 @@ class DoubleBufferCanvas(Canvas):
         printnln(escape.clear.full())
 
         # gamla linjen
-        def draw_pixel(self_, pos, char, fg="", bg="", st=""):
+        def draw_pixel(self_, pos, char, fg="", bg=""):
             self_.ns.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
-            self_.ns.WriteConsoleOutputAttribute((fg, bg, st), win32console.PyCOORDType(*pos))
+            self_.ns.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
         self.draw.pixel = draw_pixel
 
         stdcon = win32console.GetStdHandle(win32console.STD_OUTPUT_HANDLE)
