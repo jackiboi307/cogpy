@@ -11,4 +11,6 @@ while True:
 
     # draw
 
+    # render
+
     screen.render()

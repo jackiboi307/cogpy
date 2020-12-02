@@ -27,18 +27,6 @@ def printnln(*args, **kwargs):
     print(*args, **kwargs)
 
 
-class color:
-    class win:
-        FGB = win32console.FOREGROUND_BLUE
-        FGG = win32console.FOREGROUND_GREEN
-        FGR = win32console.FOREGROUND_RED
-        FGI = win32console.FOREGROUND_INTENSITY
-        BGB = win32console.BACKGROUND_BLUE
-        BGG = win32console.BACKGROUND_GREEN
-        BGR = win32console.BACKGROUND_RED
-        BGI = win32console.BACKGROUND_INTENSITY
-
-
 class escape:
     class cursor:
         move = lambda x=0, y=0: f"\033[{y};{x}H"
@@ -61,30 +49,6 @@ class escape:
         line = lambda: "\033[K"
 
 
-class _getindexes:
-    # TODO - Implement a method for almost all functions in scikit_image._draw
-
-    @classmethod
-    def line(cls, start_pos, end_pos):
-        return zip(*line(*start_pos, *end_pos))
-
-    @classmethod
-    def polygon(cls, points):
-        def rc_to_2d(z):
-            x = []
-            y = []
-            for i in range(len(z)):
-                x.append(z[i][0])
-                y.append(z[i][1])
-            return x, y
-
-        return zip(*polygon(*rc_to_2d(points)))
-
-    @classmethod
-    def rect(cls, start_pos, end_pos):
-        return cls.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])))
-
-
 class _draw:
     def __init__(self, surface):
         self._surface = surface
@@ -99,16 +63,23 @@ class _draw:
                     self._surface._out[pos[1]][pos[0]][0][i] = c[i]
 
     def line(self, start_pos, end_pos, char, fg="", bg="", st=""):
-        for pos in _getindexes.line(start_pos, end_pos):
+        for pos in zip(*line(*start_pos, *end_pos)):
             self._surface.draw.pixel(pos, char, fg, bg, st)
 
     def polygon(self, points, char, fg="", bg="", st=""):
-        for pos in _getindexes.polygon(points):
+        def unzip(z):
+            x = []
+            y = []
+            for i in range(len(z)):
+                x.append(z[i][0])
+                y.append(z[i][1])
+            return x, y
+
+        for pos in zip(*polygon(*unzip(points))):
             self._surface.draw.pixel(pos, char, fg, bg, st)
 
     def rect(self, start_pos, end_pos, char, fg="", bg="", st=""):
-        for pos in _getindexes.rect(start_pos, end_pos):
-            self._surface.draw.pixel(pos, char, fg, bg, st)
+        self._surface.draw.polygon((start_pos, (start_pos[0], end_pos[1]), end_pos, (end_pos[0], start_pos[1])), char, fg, bg, st)
 
     def put(self, pos, content, ignore=string.whitespace, fg="", bg="", st=""):
         if type(content) not in (list, tuple):
@@ -129,7 +100,9 @@ class misc:
 
     @staticmethod
     def make_block(ul, ur, bl, br):
-        return {"0000": " ", "0001": "▗", "0010": "▖", "0011": "▄", "0100": "▝", "0101": "▐", "0110": "▞", "0111": "▟", "1000": "▘", "1001": "▚", "1010": "▌", "1011": "▙", "1100": "▀", "1101": "▜", "1110": "▛", "1111": "█"}[str(int(ul)) + str(int(ur)) + str(int(bl)) + str(int(br))]
+        return {"0000": " ", "0001": "▗", "0010": "▖", "0011": "▄", "0100": "▝", "0101": "▐", "0110": "▞", "0111": "▟",
+                "1000": "▘", "1001": "▚", "1010": "▌", "1011": "▙", "1100": "▀", "1101": "▜", "1110": "▛", "1111": "█"}[
+            str(int(ul)) + str(int(ur)) + str(int(bl)) + str(int(br))]
 
 
 class Surface:
@@ -161,14 +134,11 @@ class Canvas(Surface):
         if surface is not None:
             self._out = surface._out
 
-    def render(self, colored=True, give=False):
+    def render(self, colored=True, give=False, text=True):
         out = ""
         for y in self._out:
             for x in range(len(y)):
-                if colored:
-                    out += "".join(y[x][0]) + y[x][1] + "\033[0m"
-                else:
-                    out += y[x][1]
+                out += ("".join(y[x][0]) if colored else "") + (y[x][1] if text else "") + ("\033[0m" if colored else "")
             if y != len(y) - 1:
                 out += "\n"
         if give:
@@ -199,6 +169,14 @@ class DoubleBufferCanvas(Canvas):
     def __init__(self, size):
         super().__init__(size)
 
+        printnln(escape.clear.full())
+
+        # gamla linjen
+        def draw_pixel(self_, pos, char, fg="", bg="", st=""):
+            self_.ns.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
+            self_.ns.WriteConsoleOutputAttribute((fg, bg, st), win32console.PyCOORDType(*pos))
+        self.draw.pixel = draw_pixel
+
         stdcon = win32console.GetStdHandle(win32console.STD_OUTPUT_HANDLE)
         self.active_screen = 0
         self.screens = [
@@ -222,46 +200,10 @@ class DoubleBufferCanvas(Canvas):
         for it in self.screens:
             it.SetConsoleCursorInfo(self.cursor_size, False)
 
-    def render(self, colored=True, give=False, y=0):
-        out_text = [""]
-        out_colors = [""]
-        for y in self._out:
-            for x in range(len(y)):
-                if colored:
-                    out_text[-1] += y[x][1]
-                    out_colors[-1] += "".join(y[x][0])
-                else:
-                    out_text[-1] += y[x][1]
-            out_text.append("")
-            out_colors.append("")
-        if give:
-            return out
-        else:
-            for y in range(len(out_text)):
-                self.ns.WriteConsoleOutputCharacter(out_text[y], win32console.PyCOORDType(0, y))
-                self.ns.WriteConsoleOutputAttribute(out_colors[y], win32console.PyCOORDType(0, y))
-
-            self.next_screen = 1 - self.active_screen
-            self.ns = self.screens[self.next_screen]
-            self.ns.SetConsoleActiveScreenBuffer()
-
-    @classmethod
-    def render_canvasses(cls, *args):
-        options = args[-1]
-        canvasses = list(args)
-        del args
-        del canvasses[-1]
-
-        if options is not None:
-            options["y"] = 0
-
-        y = 0
-        for canvas in canvasses:
-            if options is None:
-                canvas.render(y=y)
-            else:
-                canvas.render(**options)
-            y += len(canvas._out)
+    def flip(self):
+        self.next_screen = 1 - self.active_screen
+        self.ns = self.screens[self.next_screen]
+        self.ns.SetConsoleActiveScreenBuffer()
 
 
 class time:
