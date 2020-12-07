@@ -1,5 +1,5 @@
 """
-Cogpy 1.4.5
+Cogpy 1.4.6
 """
 
 import string
@@ -64,6 +64,8 @@ class _draw:
         self._surface = surface
 
     def _db_pixel(self, pos, char, **kwargs):
+        if not (0 <= pos[1] < self._surface._size[1] and 0 <= pos[0] < self._surface._size[0]):
+            return
         if "fg" in kwargs:
             if kwargs["fg"] is not None:
                 fg, self._surface._out[pos[1]][pos[0]][0][0] = kwargs["fg"], kwargs["fg"]
@@ -83,6 +85,8 @@ class _draw:
         self._surface.backbuffer.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
 
     def pixel(self, pos, char, fg="", bg=""):
+        if not (0 <= pos[1] < self._surface._size[1] and 0 <= pos[0] < self._surface._size[0]):
+            return
         if (0 <= pos[0] < self._surface._size[0]) and (0 <= pos[1] < self._surface._size[1]):
             if char is not None:
                 self._surface._out[pos[1]][pos[0]][1] = char
