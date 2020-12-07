@@ -66,14 +66,14 @@ class _draw:
     def _db_pixel(self, pos, char, **kwargs):
         if "fg" in kwargs:
             if kwargs["fg"] is not None:
-                fg, self._surface._out[pos[1]][pos[0]][0][0] = tuple([kwargs["fg"]]*2)
+                fg, self._surface._out[pos[1]][pos[0]][0][0] = kwargs["fg"], kwargs["fg"]
             else:
                 fg = self._surface._out[pos[1]][pos[0]][0][0]
         else:
             fg = 256
         if "bg" in kwargs:
             if kwargs["bg"] is not None:
-                bg, self._surface._out[pos[1]][pos[0]][0][1] = tuple([kwargs["fg"]]*2)
+                bg, self._surface._out[pos[1]][pos[0]][0][1] = kwargs["bg"], kwargs["bg"]
             else:
                 bg = self._surface._out[pos[1]][pos[0]][0][1]
         else:
