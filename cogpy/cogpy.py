@@ -1,5 +1,5 @@
 """
-Cogpy 1.4.4
+Cogpy 1.4.5
 """
 
 import string
@@ -79,8 +79,8 @@ class _draw:
         else:
             bg = 256
         if char is not None:
-            self._surface.ns.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
-        self._surface.ns.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
+            self._surface.backbuffer.WriteConsoleOutputCharacter(char, win32console.PyCOORDType(*pos))
+        self._surface.backbuffer.WriteConsoleOutputAttribute((fg, bg), win32console.PyCOORDType(*pos))
 
     def pixel(self, pos, char, fg="", bg=""):
         if (0 <= pos[0] < self._surface._size[0]) and (0 <= pos[1] < self._surface._size[1]):
@@ -213,9 +213,7 @@ class DoubleBufferCanvas(Canvas):
 
         self.screens[self.active_screen].SetConsoleActiveScreenBuffer()
         self.cursor_size, _ = stdcon.GetConsoleCursorInfo()
-        self.next_screen = 1 - self.active_screen
-        self.ns = self.screens[self.next_screen]
-        self.ns.SetConsoleActiveScreenBuffer()
+        self.backbuffer = self.screens[1]
 
     def show_cursor(self):
         for it in self.screens:
@@ -226,9 +224,9 @@ class DoubleBufferCanvas(Canvas):
             it.SetConsoleCursorInfo(self.cursor_size, False)
 
     def flip(self):
-        self.next_screen = 1 - self.active_screen
-        self.ns = self.screens[self.next_screen]
-        self.ns.SetConsoleActiveScreenBuffer()
+        self.backbuffer.SetConsoleActiveScreenBuffer()
+        self.backbuffer = self.screens[self.active_screen]
+        self.active_screen = 1 - self.active_screen # change 1 to 0 and 0 to 1
 
 
 class time:
