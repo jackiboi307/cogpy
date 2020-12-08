@@ -1,5 +1,5 @@
 """
-Cogpy 1.4.6
+Cogpy 1.5.0
 """
 
 import string
@@ -127,6 +127,7 @@ class _draw:
 
 class misc:
     # TODO - ge denna sablans klass ett bättre namn!
+    #  kanske inte
 
     block_shade = "█▓▒░ "
     ascii_shade_1 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
@@ -226,6 +227,15 @@ class DoubleBufferCanvas(Canvas):
     def hide_cursor(self):
         for it in self.screens:
             it.SetConsoleCursorInfo(self.cursor_size, False)
+
+    def set_window_size(self, size):
+        for it in self.screens:
+            it.SetConsoleWindowInfo(True, win32console.PySMALL_RECTType(0, 0, 0, 0))
+            it.SetConsoleWindowInfo(False, win32console.PySMALL_RECTType(0, 0, size[0], size[1]))
+
+    # TODO - Flera metoder för att hantera konsolen!
+    #  PyConsoleScreenBuffer dokumentation:
+    #  http://timgolden.me.uk/pywin32-docs/PyConsoleScreenBuffer.html
 
     def flip(self):
         self.backbuffer.SetConsoleActiveScreenBuffer()
